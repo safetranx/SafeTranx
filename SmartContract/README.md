@@ -1,53 +1,63 @@
-# **Smart Contract Specification Document: Abstracted Roles for Buy/Sell and Product Validation Transactions**
+# **Smart Contract Specification Document: Abstracted Roles for Order Validation and Buy/Sell Transactions**
 
 ## **Project Overview**
-This blockchain-based e-commerce platform records secure and immutable buy, sell, and product validation transactions. Key roles in the smart contract include a **SubmitterForValidation** for product listings, a **Validator** for product approval, and a **Buyer** for purchase transactions. The backend assigns and manages these roles, abstracting complexity for the end user. Validators interact directly with the blockchain and receive real-time updates on products pending validation.
+This blockchain-based e-commerce platform securely records buy, sell, and order validation transactions. Key roles in the smart contract include:
+- **SubmitterForValidation**: Manages product listings.
+- **Validator**: Validates orders post-purchase.
+- **Seller**: Handles order and delivery management.
+- **Delivery Person**: Tracks delivery progress.
+- **Buyer**: Purchases products.
 
----
+These roles are assigned and managed by the backend, abstracting complexity for the end user. Products become immediately available upon listing, and Validators only engage when an order is created to ensure product specifications match the listing before finalization.
 
 ## **Smart Contract Requirements**
 
 ### **1. Contract Roles and Permissions**
-   - **SubmitterForValidation**: A backend-assigned role for managing product listing and buying on behalf of users.
-   - **Validator**: A blockchain-registered role where verified users (validated by an admin) directly interact with the smart contract to approve or reject product listings. Validators receive notifications (via backend integration) for any new listings awaiting validation.
-   - **Buyer**: A backend-assigned role that allows registered users to purchase validated products. The backend interface handles purchase transactions and escrow confirmations.
-   - **Admin**: Oversees validator approvals and manages role assignments.
-
----
+- **SubmitterForValidation**: Manages product listings, with products immediately available in the marketplace.
+- **Validator**: Engages when an order is created, confirming that ordered products match Seller specifications.
+- **Seller**: Manages listings, assigns Delivery Persons, and updates order status.
+- **Delivery Person**: Tracks and updates delivery progress.
+- **Buyer**: Purchases products and confirms order completion.
+- **Admin**: Oversees validator approvals and role assignments.
 
 ## **2. Functional Components**
 
-### **A. Product Listing and Validation**
-   - **Product Structure**: Each product has a unique identifier, name, description, price, and associated seller’s address.
-   - **Listing by SubmitterForValidation**: Products are listed by the **SubmitterForValidation** role, managed by the backend, and marked as “Pending Validation.”
-   - **Direct Validation**: Validators interact directly with the contract to approve or reject products. Validators receive notifications (via backend integration) for any new listings awaiting validation.
+### **A. Product Listing and Marketplace Availability**
+- **Product Structure**: Each product has a unique identifier, name, description, price, and associated seller’s address.
+- **Immediate Marketplace Listing**: Products listed by **SubmitterForValidation** are available in the marketplace without initial validation.
 
-### **B. Buy and Sell Transactions**
-   - **Purchase Process**: Buyers interact with the backend to purchase validated products, creating a transaction record on the blockchain.
-   - **Escrow Mechanism** (if applicable): Payments are held in escrow until a purchase transaction is confirmed by the buyer, ensuring secure transactions.
+### **B. Order Creation and Validation**
+- **Order Creation**: Buyers place an order, prompting notifications to the Seller and available Validators.
+- **Order Validation**: Validators confirm that order details match the Seller’s listing, updating the order status to “Validated” or “Rejected.”
+- **Assignment of Delivery**: Once validated, Sellers assign a Delivery Person.
 
----
+### **C. Delivery Tracking**
+- **Order Status Updates**:
+  - **Delivery In Progress**: Updated when the Delivery Person begins delivery.
+  - **Delivery Completed**: Updated by the Delivery Person upon completion.
+  - **Order Finalization**: The Seller marks the order as “Complete,” and the Buyer confirms, marking it as “Finalized.”
 
 ## **3. Smart Contract Functions**
 
 ### **A. SubmitterForValidation Functions**
-   - **`listProduct(productId, name, description, price)`**: Allows the **SubmitterForValidation** role to add a product to the marketplace. Products are set to “Pending Validation.”
-   - **`confirmSale(orderId)`**: Confirms the sale upon purchase completion by the buyer (optional if escrow is used).
+- `listProduct(productId, name, description, price)`: Lists a product on the marketplace, making it immediately available for purchase.
 
 ### **B. Validator Functions**
-   - **`registerValidator(validatorAddress)`**: Validators create profiles on the blockchain, pending verification by an admin.
-   - **`validateProduct(productId)`**: Validators directly approve products after review, marking them as available for purchase.
-   - **`rejectProduct(productId)`**: Rejects a product if it does not meet platform standards, recorded on the blockchain.
+- `validateOrder(orderId)`: Confirms order details, updating status to “Validated” or “Rejected.”
 
-### **C. Buyer Functions (Managed by Backend)**
-   - **`purchaseProduct(productId)`**: Buyers purchase a product via the backend, which interacts with the contract to log the transaction and manage escrow.
-   - **`confirmReceipt(orderId)`**: Confirms receipt of a product, releasing funds to the seller if escrow is used.
+### **C. Seller Functions**
+- `assignDelivery(orderId, deliveryPersonAddress)`: Assigns a Delivery Person post-validation.
+- `completeOrder(orderId)`: Marks the order as “Complete.”
 
-### **D. Admin Functions**
-   - **`approveValidator(validatorAddress)`**: Verifies and activates a validator’s profile after registration.
-   - **`assignRole(userAddress, role)`**: Assigns roles (SubmitterForValidation, Buyer) for secure backend-managed operations.
+### **D. Delivery Person Functions**
+- `updateDeliveryStatus(orderId, status)`: Updates delivery status to “In Progress” or “Delivery Completed.”
 
----
+### **E. Buyer Functions (Managed by Backend)**
+- `confirmOrderCompletion(orderId)`: Confirms and finalizes the order.
+
+### **F. Admin Functions**
+- `approveValidator(validatorAddress)`: Approves validators for role activation.
+- `assignRole(userAddress, role)`: Assigns roles for secure, backend-managed operations.
 
 ## **4. Data Structures**
 
@@ -59,58 +69,49 @@ struct Product {
     string description;
     uint price;
     address seller;
-    bool isValidated;
 }
 ```
 
-### **Transaction Structure**
+### **Order Structure**
 ```solidity
-struct Transaction {
-    uint transactionId;
+struct Order {
+    uint orderId;
     uint productId;
     address buyer;
     address seller;
-    uint price;
-    uint timestamp;
+    address validator;
+    address deliveryPerson;
+    bool isValidated;
+    OrderStatus status; // Enum: Pending, Validated, Delivery In Progress, Delivery Completed, Finalized
 }
 ```
-
-### **Validator Profile Structure**
-```solidity
-struct ValidatorProfile {
-    address validatorAddress;
-    bool isVerified;
-}
-```
-
----
 
 ## **5. Smart Contract Workflow**
 
-1. **Product Listing**:
-   - The **SubmitterForValidation** role (backend-managed) lists products, marking them as “Pending Validation.”
-2. **Product Validation**:
-   - Validators register on-chain and are approved by an admin.
-   - Once approved, validators can validate or reject listed products.
-   - Validators receive notifications of new listings via the backend interface.
-3. **Purchase Transaction**:
-   - Buyers purchase validated products through the backend interface.
-   - The transaction details, including buyer, seller, and product information, are logged on the blockchain.
-4. **Confirmation (Escrow only)**:
-   - If escrow is used, buyers confirm receipt through the backend, which releases funds to the seller.
+1. **Product Listing**
+   - **SubmitterForValidation** lists products, making them immediately available in the marketplace.
 
----
+2. **Order Creation**
+   - Buyers place an order, notifying the Seller and Validators.
+
+3. **Order Validation**
+   - Validators check if order details match the Seller’s listing and update the order status accordingly.
+
+4. **Assign Delivery**
+   - Upon validation, the Seller assigns a Delivery Person.
+
+5. **Delivery Tracking and Completion**
+   - The Delivery Person marks delivery as “Completed” upon completion.
+   - The Seller and Buyer confirm order completion, marking it as “Finalized.”
 
 ## **6. Security Considerations**
 
-- **Role-Based Access Control**: Only authorized addresses, managed by the backend, can perform specific actions. Validators interact directly on-chain.
-- **Validator Approval**: Only verified validators, approved by admins, can validate products.
-- **Data Immutability**: Ensure that transaction logs are immutable once completed, providing a secure and auditable history of buy, sell, and validation actions.
-- **Reentrancy Guard**: Safeguard fund-related functions, especially in escrow, against reentrancy attacks.
-
----
+- **Role-Based Access Control**: Authorized addresses, managed by the backend, perform specific actions.
+- **Validator Approval**: Only verified Validators, approved by Admins, validate orders.
+- **Data Immutability**: Ensures order, validation, and delivery logs are immutable.
+- **Reentrancy Guard**: Protects functions involving funds if escrow is considered in the future.
 
 ## **7. Future Considerations**
 
-- **Reputation System**: Consider implementing a reputation mechanism to incentivize reliable validators and buyers.
-- **Scalable Notification System**: Integrate a scalable off-chain notification system for validators to keep track of pending products.
+- **Reputation System**: Incentivize reliable Validators, Sellers, and Delivery Persons.
+- **Scalable Notification System**: Integrate off-chain notifications for Validators to track new orders needing validation.
