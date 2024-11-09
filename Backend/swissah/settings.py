@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-t9=zea0!6j573zutn7(nkjk_g!&5ovf9o_z!5lmbhywj&r+!uv
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'http://127.0.0.1',
+    '127.0.0.1',
     'swissah-ecom.onrender.com',
     'https://swissah-ecom.onrender.com'
 ]
@@ -133,3 +133,20 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ==================== REST FRAMEWORK ====================
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+
+# ==================== DRF SPECTACULAR ====================
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Swissah Ecom API',
+    'DESCRIPTION': 'Swissah E-Commerce Backend',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
