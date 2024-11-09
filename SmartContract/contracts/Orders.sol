@@ -63,8 +63,13 @@ contract Orders {
         _;
     }
 
+    constructor() {
+        roles[msg.sender] = "Admin";
+    }
+
     // Function to list a product
     function listProduct(string memory name, string memory description, uint price) external {
+        require(price > 0, "Price must be greater than zero");
         productCount++;
         products[productCount] = Product(productCount, name, description, price, msg.sender);
         
@@ -93,9 +98,6 @@ contract Orders {
             order.isValidated = true;
             order.status = OrderStatus.Validated;
             emit OrderValidated(orderId, true);
-            
-            // Assign delivery person (could be done by seller)
-            assignDelivery(orderId, msg.sender); 
         } else {
             order.status = OrderStatus.Rejected;
             emit OrderValidated(orderId, false);
@@ -103,7 +105,7 @@ contract Orders {
     }
 
     // Function to assign a delivery person
-    function assignDelivery(uint orderId, address deliveryPersonAddress) internal {
+    function assignDelivery(uint orderId, address deliveryPersonAddress) external {
         orders[orderId].deliveryPerson = deliveryPersonAddress;
         orders[orderId].status = OrderStatus.DeliveryInProgress;
 
@@ -130,8 +132,6 @@ contract Orders {
         orders[orderId].status = OrderStatus.Finalized;
 
         emit OrderFinalized(orderId);
-        
-        // Additional logic for payment settlement can be added here.
     }
 
     // Admin functions to manage validators and roles

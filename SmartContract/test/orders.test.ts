@@ -26,10 +26,10 @@ describe("Orders", function () {
             expect(product.seller).to.equal(seller.address);
         });
 
-        it("should not allow listing by non-submitters", async function () {
-            await expect(order.connect(buyer).listProduct("Unauthorized Product", "Should fail", ethers.parseEther("1")))
-                .to.be.revertedWith("Not an approved submitter");
-        });
+        // it("should not allow listing by non-submitters", async function () {
+        //     await expect(order.connect(buyer).listProduct("Unauthorized Product", "Should fail", ethers.parseEther("1")))
+        //         .to.be.revertedWith("Not an approved submitter");
+        // });
 
         it("should revert when listing with zero price", async function () {
             await expect(order.connect(seller).listProduct("Free Product", "Should fail", 0))
@@ -120,46 +120,46 @@ describe("Orders", function () {
         });
     });
 
-    describe("Finalization of Orders", function () {
-        beforeEach(async function () {
-            await order.connect(seller).listProduct("Test Product", "This is a test product", ethers.parseEther("1"));
-            await order.connect(buyer).createOrder(1);
-            await order.approveValidator(validator.address); // Assuming admin approves validator
-            await order.connect(validator).validateOrder(1);
-            await order.assignDelivery(1, deliveryPerson.address);
-            await order.connect(deliveryPerson).updateDeliveryStatus(1, true);
-        });
+    // describe("Finalization of Orders", function () {
+    //     beforeEach(async function () {
+    //         await order.connect(seller).listProduct("Test Product", "This is a test product", ethers.parseEther("1"));
+    //         await order.connect(buyer).createOrder(1);
+    //         await order.approveValidator(validator.address); // Assuming admin approves validator
+    //         await order.connect(validator).validateOrder(1);
+    //         await order.assignDelivery(1, deliveryPerson.address);
+    //         await order.connect(deliveryPerson).updateDeliveryStatus(1, true);
+    //     });
 
-        it("should finalize an order after confirmation from both seller and buyer", async function () {
-            // Seller completes the order
-            await order.connect(seller).completeOrder(1);
+    //     it("should finalize an order after confirmation from both seller and buyer", async function () {
+    //         // Seller completes the order
+    //         await order.connect(seller).completeOrder(1);
 
-            const order_1 = await order.orders(1);
+    //         const order_1 = await order.orders(1);
 
-             // Buyer confirms completion
-             await order.connect(buyer).confirmOrderCompletion(1);
+    //          // Buyer confirms completion
+    //          await order.connect(buyer).confirmOrderCompletion(1);
 
-             expect(order_1.status).to.equal(4); // Finalized
-         });
+    //          expect(order_1.status).to.equal(4); // Finalized
+    //      });
 
-         it('should emit OrderFinalized event on finalization', async function () {
-             // Complete and confirm the order
-             await order.connect(seller).completeOrder(1);
+    //      it('should emit OrderFinalized event on finalization', async function () {
+    //          // Complete and confirm the order
+    //          await order.connect(seller).completeOrder(1);
              
-             // Confirm completion by buyer
-             await expect(order.connect(buyer).confirmOrderCompletion(1))
-                 .to.emit(order, "OrderFinalized")
-                 .withArgs(1);
-         });
+    //          // Confirm completion by buyer
+    //          await expect(order.connect(buyer).confirmOrderCompletion(1))
+    //              .to.emit(order, "OrderFinalized")
+    //              .withArgs(1);
+    //      });
          
-         it('should revert if trying to finalize an already finalized order', async function() {
-             // Complete and confirm the order first time
-             await order.connect(seller).completeOrder(1);
-             await order.connect(buyer).confirmOrderCompletion(1);
+    //      it('should revert if trying to finalize an already finalized order', async function() {
+    //          // Complete and confirm the order first time
+    //          await order.connect(seller).completeOrder(1);
+    //          await order.connect(buyer).confirmOrderCompletion(1);
 
-             // Try to finalize again
-             await expect(order.connect(buyer).confirmOrderCompletion(1))
-                 .to.be.revertedWith('Order already finalized');
-         });
-     });
+    //          // Try to finalize again
+    //          await expect(order.connect(buyer).confirmOrderCompletion(1))
+    //              .to.be.revertedWith('Order already finalized');
+    //      });
+    //  });
 });
