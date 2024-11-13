@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-t9=zea0!6j573zutn7(nkjk_g!&5ovf9o_z!5lmbhywj&r+!uv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'http://127.0.0.1',
+    'swissah-ecom.onrender.com',
+    'https://swissah-ecom.onrender.com'
+]
 
 
 # Application definition
