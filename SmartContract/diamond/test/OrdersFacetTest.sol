@@ -28,7 +28,7 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
     event OrderCreated(uint indexed _orderId, uint indexed _productId, address _buyer);
     event OrderValidated(uint indexed _orderId, bool _isValidated);
     event DeliveryAssigned(uint indexed _orderId, address _deliveryPerson);
-    event DeliveryStatusUpdated(uint indexed _orderId, OrdersFacet.OrderStatus _status);
+    event DeliveryStatusUpdated(uint indexed _orderId, LibDiamond.OrderStatus _status);
     event OrderFinalized(uint indexed _orderId);
     event ValidatorApproved(address _validator);
 
@@ -87,7 +87,7 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         
         OrdersFacet(address(diamond)).listProduct(name, description, price);
         
-        OrdersFacet.Product memory product = OrdersFacet(address(diamond)).getProduct(1);
+        LibDiamond.Product memory product = OrdersFacet(address(diamond)).getProduct(1);
         assertEq(product.name, name);
         assertEq(product.description, description);
         assertEq(product.price, price);
@@ -107,10 +107,10 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         
         OrdersFacet(address(diamond)).createOrder(1);
         
-        OrdersFacet.Order memory order = OrdersFacet(address(diamond)).getOrder(1);
+        LibDiamond.Order memory order = OrdersFacet(address(diamond)).getOrder(1);
         assertEq(order.buyer, buyer);
         assertEq(order.seller, seller);
-        assertEq(uint(order.status), uint(OrdersFacet.OrderStatus.Pending));
+        assertEq(uint(order.status), uint(LibDiamond.OrderStatus.Pending));
         vm.stopPrank();
     }
 
@@ -134,9 +134,9 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         
         OrdersFacet(address(diamond)).validateOrder(1);
         
-        OrdersFacet.Order memory order = OrdersFacet(address(diamond)).getOrder(1);
+        LibDiamond.Order memory order = OrdersFacet(address(diamond)).getOrder(1);
         assertTrue(order.isValidated);
-        assertEq(uint(order.status), uint(OrdersFacet.OrderStatus.Validated));
+        assertEq(uint(order.status), uint(LibDiamond.OrderStatus.Validated));
         vm.stopPrank();
     }
 
@@ -165,12 +165,12 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         // Update delivery status
         vm.startPrank(deliveryPerson);
         vm.expectEmit(true, false, false, true);
-        emit DeliveryStatusUpdated(1, OrdersFacet.OrderStatus.DeliveryCompleted);
+        emit DeliveryStatusUpdated(1, LibDiamond.OrderStatus.DeliveryCompleted);
         
         OrdersFacet(address(diamond)).updateDeliveryStatus(1, true);
         
-        OrdersFacet.Order memory order = OrdersFacet(address(diamond)).getOrder(1);
-        assertEq(uint(order.status), uint(OrdersFacet.OrderStatus.Finalized));
+        LibDiamond.Order memory order = OrdersFacet(address(diamond)).getOrder(1);
+        assertEq(uint(order.status), uint(LibDiamond.OrderStatus.Finalized));
         vm.stopPrank();
     }
 
@@ -273,16 +273,16 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         OrdersFacet(address(diamond)).updateDeliveryStatus(1, false);
         
         // Verify status is DeliveryInProgress
-        OrdersFacet.Order memory orderInProgress = OrdersFacet(address(diamond)).getOrder(1);
-        assertEq(uint(orderInProgress.status), uint(OrdersFacet.OrderStatus.DeliveryInProgress));
+        LibDiamond.Order memory orderInProgress = OrdersFacet(address(diamond)).getOrder(1);
+        assertEq(uint(orderInProgress.status), uint(LibDiamond.OrderStatus.DeliveryInProgress));
         
         // 7. Complete Delivery
         vm.prank(deliveryPerson);
         OrdersFacet(address(diamond)).updateDeliveryStatus(1, true);
         
         // 8. Verify Final State
-        OrdersFacet.Order memory finalOrder = OrdersFacet(address(diamond)).getOrder(1);
-        assertEq(uint(finalOrder.status), uint(OrdersFacet.OrderStatus.Finalized));
+        LibDiamond.Order memory finalOrder = OrdersFacet(address(diamond)).getOrder(1);
+        assertEq(uint(finalOrder.status), uint(LibDiamond.OrderStatus.Finalized));
         assertEq(finalOrder.buyer, buyer);
         assertEq(finalOrder.seller, seller);
         assertEq(finalOrder.deliveryPerson, deliveryPerson);
@@ -329,8 +329,8 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         vm.stopPrank();
         
         // Verify order details
-        OrdersFacet.Order memory order1 = OrdersFacet(address(diamond)).getOrder(1);
-        OrdersFacet.Order memory order2 = OrdersFacet(address(diamond)).getOrder(2);
+        LibDiamond.Order memory order1 = OrdersFacet(address(diamond)).getOrder(1);
+        LibDiamond.Order memory order2 = OrdersFacet(address(diamond)).getOrder(2);
         
         assertEq(order1.productId, 1);
         assertEq(order2.productId, 2);
@@ -353,7 +353,7 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         vm.prank(validator);
         OrdersFacet(address(diamond)).validateOrder(2);
         
-        OrdersFacet.Order memory order = OrdersFacet(address(diamond)).getOrder(2);
+        LibDiamond.Order memory order = OrdersFacet(address(diamond)).getOrder(2);
         assertFalse(order.isValidated);
     }
 
@@ -364,7 +364,7 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         vm.prank(seller);
         OrdersFacet(address(diamond)).listProduct("Fuzz Test Product", "Description", price);
         
-        OrdersFacet.Product memory product = OrdersFacet(address(diamond)).getProduct(1);
+        LibDiamond.Product memory product = OrdersFacet(address(diamond)).getProduct(1);
         assertEq(product.price, price);
     }
 

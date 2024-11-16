@@ -34,6 +34,37 @@ library LibDiamond {
         uint256 facetAddressPosition; // position of facetAddress in facetAddresses array
     }
 
+      // Enum for order status
+    enum OrderStatus {
+        Pending,
+        Validated,
+        DeliveryInProgress,
+        DeliveryCompleted,
+        Finalized,
+        Rejected
+    }
+
+    // Struct for Product
+    struct Product {
+        uint productId;
+        string name;
+        string description;
+        uint price;
+        address seller;
+    }
+
+    // Struct for Order
+    struct Order {
+        uint orderId;
+        uint productId;
+        address buyer;
+        address seller;
+        address validator;
+        address deliveryPerson;
+        bool isValidated;
+        OrderStatus status;
+    }
+
     struct DiamondStorage {
         // maps function selector to the facet address and
         // the position of the selector in the facetFunctionSelectors.selectors array
@@ -47,6 +78,14 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
+
+        // orders storage
+        mapping(uint => Product) products;
+        mapping(uint => Order) orders;
+        mapping(address => bool) validators;
+        mapping(address => string) roles;
+        uint productCount;
+        uint orderCount;
     }
 
     function diamondStorage()
