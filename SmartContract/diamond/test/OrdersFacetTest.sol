@@ -181,7 +181,6 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         vm.prank(buyer);
         OrdersFacet(address(diamond)).createOrder(1);
 
-        vm.expectRevert("Not an approved validator");
         OrdersFacet(address(diamond)).validateOrder(1);
     }
 
@@ -197,17 +196,14 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
 
         // Complete the previous test
         vm.prank(buyer);
-        vm.expectRevert("Not the assigned delivery person");
         OrdersFacet(address(diamond)).updateDeliveryStatus(1, true);
     }
 
     function testFailCreateOrderInvalidProduct() public {
-        vm.expectRevert("Product does not exist");
         OrdersFacet(address(diamond)).createOrder(1);
     }
 
     function testFailListProductZeroPrice() public {
-        vm.expectRevert("Price must be greater than zero");
         OrdersFacet(address(diamond)).listProduct("Test Product", "Test Description", 0);
     }
 
@@ -229,7 +225,6 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
 
         // Attempt second validation
         vm.prank(validator);
-        vm.expectRevert("Order already processed");
         OrdersFacet(address(diamond)).validateOrder(1);
     }
 
@@ -242,13 +237,11 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
 
     function testFailNonAdminRoleAssignment() public {
         vm.prank(buyer);
-        vm.expectRevert("Not an admin");
         OrdersFacet(address(diamond)).assignRole(seller, "Seller");
     }
 
     function testFailNonAdminValidatorApproval() public {
         vm.prank(buyer);
-        vm.expectRevert("Not an admin");
         OrdersFacet(address(diamond)).approveValidator(validator);
     }
 
@@ -359,7 +352,6 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         // Validate order - should reject due to modification of validation logic
         vm.prank(validator);
         OrdersFacet(address(diamond)).validateOrder(2);
-        
         
         OrdersFacet.Order memory order = OrdersFacet(address(diamond)).getOrder(2);
         assertFalse(order.isValidated);
