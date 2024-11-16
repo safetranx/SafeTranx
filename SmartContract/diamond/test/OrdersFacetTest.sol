@@ -358,9 +358,10 @@ contract OrdersFacetTest is DiamondUtils, IDiamondCut {
         
         // Validate order - should reject due to modification of validation logic
         vm.prank(validator);
-        OrdersFacet(address(diamond)).validateOrder(1);
+        OrdersFacet(address(diamond)).validateOrder(2);
         
-        OrdersFacet.Order memory order = OrdersFacet(address(diamond)).getOrder(1);
+        
+        OrdersFacet.Order memory order = OrdersFacet(address(diamond)).getOrder(2);
         assertFalse(order.isValidated);
     }
 
